@@ -1,0 +1,60 @@
+(function () {
+  var recaptchaBadge = document.querySelector(".grecaptcha-badge");
+  if (recaptchaBadge) {
+    recaptchaBadge.style.display = "none";
+  }
+})();
+
+function initOLChat() {
+  var ifrm = document.createElement("iframe");
+  ifrm.setAttribute("id", "ifrm");
+  ifrm.style.position = "fixed";
+  ifrm.style.bottom = "0px";
+  ifrm.style.right = "0px";
+  ifrm.style.border = "none";
+  ifrm.style.zIndex = "9999";
+  ifrm.style.backgroundColor = "transparent";
+  //ifrm.setAttribute("sandbox", "allow-top-navigation allow-scripts allow-forms allow-same-origin");
+  ifrm.setAttribute("src", `https://webchat.libertybank.ge/view/index.html`);
+
+  document.body.appendChild(ifrm);
+
+  var recaptchaBadge = document.querySelector(".grecaptcha-badge");
+  if (recaptchaBadge) {
+    recaptchaBadge.style.display = "none";
+  }
+}
+initOLChat();
+
+function initOLChatChangeLnaguage(lang) {
+  document
+    .getElementById("ifrm")
+    .contentWindow.postMessage({ lang: lang }, "*");
+}
+
+function initOLChatDimensions() {
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+  document
+    .getElementById("ifrm")
+    .contentWindow.postMessage({ height, width }, "*");
+}
+
+window.addEventListener("resize", initOLChatDimensions);
+var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+var eventer = window[eventMethod];
+var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+eventer(
+  messageEvent,
+  function (e) {
+    if (e.data === "HEIGHT_REQ") {
+      initOLChatDimensions();
+    }
+    if (e.data === "LANGUAGE_REQ") {
+      initOLChatChangeLnaguage(OLChatLanguageParameter);
+    }
+    document.getElementById("ifrm").style.width = e.data.width + "px";
+    document.getElementById("ifrm").style.height = e.data.height + "px";
+  },
+  false
+);
